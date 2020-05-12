@@ -1,18 +1,39 @@
 import React from "react";
 import Post from "./../../widgets/Post";
+import store from "./../../store";
+import {
+  addPost,
+  fetchPosts,
+  deletePost,
+  incDislikes,
+  incLikes,
+  updatePost,
+} from "./../../store/actions/posts";
+
 export default class Posts extends React.Component {
   state = {
     title: "-----",
     description: "",
     posts: [],
+    buttonLabel: "Create post",
+    currentIndex: null,
   };
+
   constructor() {
     super();
+  }
+
+  componentDidMount() {
+    store.subscribe(() => {
+      this.setState({ posts: store.getState() });
+    });
+    store.dispatch(fetchPosts());
   }
 
   titleHandler(event) {
     this.setState({ title: event.target.value });
   }
+
   descHandler(event) {
     this.setState({ description: event.target.value });
   }
@@ -24,26 +45,44 @@ export default class Posts extends React.Component {
       likes: 0,
       disLikes: 0,
     };
-    this.setState((state) => {
-      return {
-        posts: [...state.posts, obj],
-      };
-    });
+    store.dispatch(addPost(obj));
   };
 
-  incLikes = (index) => {
-    const posts = this.state.posts;
-    posts[index].likes = posts[index].likes + 1;
-    this.setState({
-      posts,
-    });
+  updatePost() {
+    const post = {
+      title: this.state.title,
+      description: this.state.description,
+    };
+    store.dispatch(updatePost(this.state.currentIndex, post));
+  }
+
+  handleButton() {
+    if (this.state.buttonLabel.includes("Create")) {
+      this.createPost();
+    } else {
+      this.updatePost();
+    }
+  }
+
+  incLikes = (index, likes) => {
+    store.dispatch(incLikes(index, likes));
   };
 
-  incDisLikes = (index) => {
-    const posts = this.state.posts;
-    posts[index].disLikes = posts[index].disLikes + 1;
+  incDisLikes = (index, disLikes) => {
+    store.dispatch(incDislikes(index, disLikes));
+  };
+
+  delete = (index) => {
+    store.dispatch(deletePost(index));
+  };
+
+  edit = (index, post) => {
+    const { title, description } = post;
     this.setState({
-      posts,
+      title,
+      description,
+      buttonLabel: "Update Post",
+      currentIndex: index,
     });
   };
 
@@ -58,6 +97,7 @@ export default class Posts extends React.Component {
             <tr>
               <td>
                 <input
+                  value={this.state.title}
                   onChange={this.titleHandler.bind(this)}
                   placeholder="title"
                 />
@@ -66,6 +106,7 @@ export default class Posts extends React.Component {
             <tr>
               <td>
                 <textarea
+                  value={this.state.description}
                   onChange={this.descHandler.bind(this)}
                   placeholder="Description"
                 ></textarea>
@@ -73,7 +114,9 @@ export default class Posts extends React.Component {
             </tr>
             <tr>
               <td>
-                <button onClick={this.createPost}>POST</button>
+                <button onClick={this.handleButton.bind(this)}>
+                  {this.state.buttonLabel}
+                </button>
               </td>
             </tr>
           </tbody>
@@ -81,14 +124,18 @@ export default class Posts extends React.Component {
         <ol>
           {this.state.posts.map((post, i) => {
             return (
-              <Post
-                onLike={() => this.incLikes(i)}
-                onDisLike={() => this.incDisLikes(i)}
-                tools={["JS", "C++", "C#"]}
-                url={`http://www.google.come`}
-                post={post}
-                key={i}
-              />
+              <>
+                <Post
+                  onLike={() => this.incLikes(i, post.likes)}
+                  onDisLike={() => this.incDisLikes(i, post.disLikes)}
+                  onDelete={() => this.delete(i)}
+                  onEdit={() => this.edit(i, post)}
+                  tools={["JS", "C++", "C#"]}
+                  url={`http://www.google.come`}
+                  post={post}
+                  key={i}
+                />
+              </>
             );
           })}
         </ol>
