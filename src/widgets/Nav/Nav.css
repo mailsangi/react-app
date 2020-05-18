@@ -14,3 +14,7 @@ ul li a {
   padding: 10px;
   text-decoration: none;
 }
+
+.active {
+  color: orchid;
+}

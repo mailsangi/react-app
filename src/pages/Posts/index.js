@@ -1,16 +1,15 @@
 import React from "react";
+import { connect } from "react-redux";
 import Post from "./../../widgets/Post";
-import store from "./../../store";
 import {
   addPost,
-  fetchPosts,
   deletePost,
   incDislikes,
   incLikes,
   updatePost,
 } from "./../../store/actions/posts";
 
-export default class Posts extends React.Component {
+class Posts extends React.Component {
   state = {
     title: "-----",
     description: "",
@@ -19,15 +18,12 @@ export default class Posts extends React.Component {
     currentIndex: null,
   };
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
   }
 
   componentDidMount() {
-    store.subscribe(() => {
-      this.setState({ posts: store.getState() });
-    });
-    store.dispatch(fetchPosts());
+    console.log("PROPS", this.props);
   }
 
   titleHandler(event) {
@@ -45,7 +41,7 @@ export default class Posts extends React.Component {
       likes: 0,
       disLikes: 0,
     };
-    store.dispatch(addPost(obj));
+    this.props.addPost(obj);
   };
 
   updatePost() {
@@ -53,7 +49,7 @@ export default class Posts extends React.Component {
       title: this.state.title,
       description: this.state.description,
     };
-    store.dispatch(updatePost(this.state.currentIndex, post));
+    this.props.updatePost(this.state.currentIndex, post);
   }
 
   handleButton() {
@@ -65,15 +61,15 @@ export default class Posts extends React.Component {
   }
 
   incLikes = (index, likes) => {
-    store.dispatch(incLikes(index, likes));
+    this.props.incLikes(index, likes);
   };
 
   incDisLikes = (index, disLikes) => {
-    store.dispatch(incDislikes(index, disLikes));
+    this.props.incDisLikes(index, disLikes);
   };
 
   delete = (index) => {
-    store.dispatch(deletePost(index));
+    this.props.deletePost(index);
   };
 
   edit = (index, post) => {
@@ -122,7 +118,7 @@ export default class Posts extends React.Component {
           </tbody>
         </table>
         <ol>
-          {this.state.posts.map((post, i) => {
+          {this.props.posts.map((post, i) => {
             return (
               <>
                 <Post
@@ -143,3 +139,33 @@ export default class Posts extends React.Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    posts: state.posts,
+    dhjskhd: state.articles,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addPost: (payload) => {
+      dispatch(addPost(payload));
+    },
+    updatePost: (index, post) => {
+      dispatch(updatePost(index, post));
+    },
+    incLikes: (index, likes) => {
+      dispatch(incLikes(index, likes));
+    },
+    incDisLikes: (index, disLikes) => {
+      dispatch(incDislikes(index, disLikes));
+    },
+    deletePost: (index) => {
+      dispatch(deletePost(index));
+    },
+  };
+};
+
+const ActualComponent = connect(mapStateToProps, mapDispatchToProps)(Posts);
+export default ActualComponent;

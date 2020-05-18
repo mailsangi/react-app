@@ -1,18 +1,29 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import "./Nav.css";
 export default function Nav() {
   return (
     <ul>
       <li>
-        <Link to="">Home</Link>
+        <NavLink exact={true} activeClassName="active" to="">
+          Home
+        </NavLink>
       </li>
       <li>
-        <Link to="articles">Articles</Link>
+        <NavLink activeClassName="active" to="articles">
+          Articles
+        </NavLink>
       </li>
       <li>
-        <Link to="posts">Posts</Link>
+        <NavLink activeClassName="active" to="posts">
+          Posts
+        </NavLink>
+      </li>
+      <li>
+        <NavLink activeClassName="active" to="random">
+          Random
+        </NavLink>
       </li>
     </ul>
   );

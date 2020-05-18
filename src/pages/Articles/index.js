@@ -1,9 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Post from "../../widgets/Post";
+
+import store from "./../../store/index";
 
 export default function Articles() {
   const [post, setPost] = useState({});
-  const [posts, setPosts] = useState([]);
+  const [articles, setArticles] = useState([]);
+  const [changed, setChanged] = useState([]);
+
+  useEffect(() => {
+    console.log("Useeffect is being called.", store.getState());
+    store.subscribe(() => {
+      setArticles(store.getState().articles);
+    });
+    store.dispatch({ type: "GET_ARTICLES" });
+    setChanged(!!!changed);
+  }, []);
   function titleHandler(event) {
     const obj = {
       ...post,
@@ -22,18 +34,17 @@ export default function Articles() {
 
   const createPost = () => {
     const obj = { ...post, likes: 0, disLikes: 0 };
-    const posts_ = [...posts, obj];
-    setPosts(posts_);
+    store.dispatch({ type: "ADD_ARTICLE", payload: obj });
   };
   const incLikes = (index) => {
-    const posts_ = [...posts];
+    const posts_ = [...articles];
     posts_[index].likes++;
-    setPosts(posts_);
+    setArticles(posts_);
   };
   const disLikes = (index) => {
-    const posts_ = [...posts];
+    const posts_ = [...articles];
     posts_[index].disLikes++;
-    setPosts(posts_);
+    setArticles(posts_);
   };
   return (
     <div>
@@ -62,7 +73,7 @@ export default function Articles() {
         </tbody>
       </table>
       <ol>
-        {posts.map((post, index) => (
+        {articles.map((post, index) => (
           <Post
             key={index}
             onDisLike={() => disLikes(index)}
